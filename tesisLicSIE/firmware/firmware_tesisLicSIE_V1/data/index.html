@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Quiz Multiple Choice - ESP32 / Web</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- SweetAlert2: local (ESP32) -->
+  <script src="sweetalert2.all.min.js"></script>
+  <!-- SweetAlert2: CDN (modo online / hosting) -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
+
+  <!-- XLSX: local (ESP32) -->
+  <script src="xlsx.full.min.js"></script>
+  <!-- XLSX: CDN (modo online / hosting) -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+  <!-- CSS externo -->
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body data-theme="light">
+
+  <!-- NAVBAR -->
+  <nav class="navbar">
+    <div class="nav-left">
+      <!-- Logo UTN-TUC (servido por el ESP32 o hosting) -->
+      <img src="https://frt.utn.edu.ar/wp-content/uploads/elementor/thumbs/descarga-removebg-preview-qxah6c0ycvhe6sie8wx30a0gb3rf1yn226favl26tc-qy17u6no60q8xbkeh0dtetqyiz7hei7hiu2sc1k9vk.png" alt="UTN-TUC">
+        
+    </div>
+
+<div class="titulo">
+    <span>Proyecto: Recurso Educativo Interactivo Aplicando Sistemas de Inteligencia Embebida</span>
+</div>
+    <div class="nav-right">
+      <div class="timer-box">
+        
+        <span class="timer-label">Cronómetro:</span>
+        <span id="timer">00:00</span>
+      </div>
+
+      <!-- Botón Start -->
+      <button id="btnStart" class="nav-btn">Start</button>
+
+      <!-- Botón Resultados -->
+      <button id="btnShowResults" class="nav-btn">Resultados</button>
+
+      <!-- Botón Editar Config (lápiz) -->
+      <button id="btnEditConfig" class="icon-btn" title="Editar configuración del test">
+        ✏️
+      </button>
+
+      <!-- Toggle Tema -->
+      <div class="theme-toggle">
+        <span class="label">Tema</span>
+        <label class="toggle-switch">
+          <input type="checkbox" id="themeCheckbox">
+          <div class="toggle-slider">
+            <span class="icon-sun">☀️</span>
+            <span class="icon-moon">🌙</span>
+          </div>
+        </label>
+      </div>
+    </div>
+  </nav>
+
+  <!-- CONTENIDO PRINCIPAL -->
+  <main>
+    <div class="card">
+      <div class="quiz-header">
+        <h1>Cuestionario Multiple Choice</h1>
+        <p>
+          Presiona <strong>Start</strong> para que el docente configure el test y el alumno pueda comenzar.
+        </p>
+      </div>
+
+      <div class="question-container">
+        <div class="question-number" id="question-number"></div>
+        <div id="question-text"></div>
+      </div>
+
+      <div class="options-grid">
+        <button class="option-btn btn-A" onclick="handleOptionClick('A')">
+          <span class="letter">A</span>
+          <span class="text" id="text-A"></span>
+        </button>
+
+        <button class="option-btn btn-B" onclick="handleOptionClick('B')">
+          <span class="letter">B</span>
+          <span class="text" id="text-B"></span>
+        </button>
+
+        <button class="option-btn btn-C" onclick="handleOptionClick('C')">
+          <span class="letter">C</span>
+          <span class="text" id="text-C"></span>
+        </button>
+
+        <button class="option-btn btn-D" onclick="handleOptionClick('D')">
+          <span class="letter">D</span>
+          <span class="text" id="text-D"></span>
+        </button>
+
+        <button class="option-btn btn-E" onclick="handleOptionClick('E')">
+          <span class="letter">E</span>
+          <span class="text" id="text-E"></span>
+        </button>
+      </div>
+
+      <div class="quiz-footer">
+        <span id="progress-text">Esperando inicio del evaluativo…</span>
+        <button onclick="resetCurrentTimer()">Reiniciar cronómetro</button>
+      </div>
+    </div>
+  </main>
+
+  <!-- FOOTER -->
+  <footer onclick="window.open('https://fmgambino.blog', '_blank')">
+    <span>Hecho con ❤️ por Profe Leandro</span>
+  </footer>
+
+  <!-- JS principal -->
+  <script src="script.js" defer></script>
+</body>
+</html>

@@ -54,6 +54,11 @@ let results = []; // ranking de alumnos
 // Para que el "próximo alumno" no reciba el mismo conjunto que el anterior
 let lastQuestionSetSignature = null;
 
+// Para la confirmación con doble pulsación de botón físico
+let pendingConfirmOption = null;   // Letra pendiente de confirmar (A–E) si hay popup abierto
+let lastButtonEventIdSeen = 0;     // Último eventId de /api/last_button procesado
+let hardwarePollInterval = null;   // Intervalo de polling de botones físicos
+
 /************* REFERENCIAS DOM *************/
 const body = document.body;
 const themeCheckbox = document.getElementById("themeCheckbox");
@@ -171,6 +176,7 @@ function updateTimerDisplay() {
 
 function startTimer() {
   clearInterval(timerInterval);
+  timerInterval = null;
   elapsedSeconds = 0;
 
   if (teacherConfig.timerMode === "down") {
@@ -523,15 +529,12 @@ function getRandomSubset(array, size) {
  * - Recibe una pregunta "original": { text, options: {A..E}, correct: 'A'..'E' }
  * - Devuelve una pregunta nueva, con el mismo texto pero opciones reordenadas,
  *   y la letra de correct actualizada.
- *
- * Esto hace que, aunque en el TXT la respuesta correcta sea siempre B,
- * en pantalla pueda quedar en A, C, D o E (de forma aleatoria).
  */
 function shuffleQuestionOptions(question) {
   const originalLetters = ["A", "B", "C", "D", "E"];
   const shuffledLetters = originalLetters.slice();
 
-  // Shuffle de las letras originales
+  // Mezclamos el orden de las letras originales
   for (let i = shuffledLetters.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
     [shuffledLetters[i], shuffledLetters[j]] = [shuffledLetters[j], shuffledLetters[i]];
@@ -540,11 +543,9 @@ function shuffleQuestionOptions(question) {
   const newOptions = {};
   let newCorrect = "A";
 
-  // Vamos a asignar las opciones a A,B,C,D,E PERO en orden mezclado
-  // Ej: A <- opción que antes era C, B <- opción que antes era A, etc.
   for (let idx = 0; idx < originalLetters.length; idx++) {
-    const newLetter = originalLetters[idx];      // A, B, C, D, E
-    const oldLetter = shuffledLetters[idx];      // alguna permutación de A..E
+    const newLetter = originalLetters[idx];   // A, B, C, D, E
+    const oldLetter = shuffledLetters[idx];   // permutación de A..E
 
     newOptions[newLetter] = question.options[oldLetter];
 
@@ -585,7 +586,7 @@ function buildQuestionSet() {
 
   lastQuestionSetSignature = signature;
 
-  // Ahora mezclamos las opciones de cada pregunta para que la correcta se mueva de letra
+  // Mezclamos las opciones de cada pregunta para que la correcta se mueva de letra
   const shuffledQuestionSet = subset.map(q => shuffleQuestionOptions(q));
   return shuffledQuestionSet;
 }
@@ -615,7 +616,49 @@ function loadQuestion() {
   document.getElementById("text-E").textContent = q.options.E;
 }
 
+/************* BUZZER (ESP32) *************/
+function playBuzzer(tipo) {
+  // Solo tiene sentido si hay ESP32 / API disponible
+  if (modoOperacion === "browser") return;
+
+  fetch("/api/buzzer", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ tipo })
+  }).catch((err) => {
+    console.warn("No se pudo invocar /api/buzzer:", err.message);
+  });
+}
+
 /************* MANEJO DE OPCIONES (A–E) *************/
+/**
+ * Lógica común para procesar la respuesta una vez confirmada
+ * (ya sea por clic en "Confirmar" o segunda pulsación física).
+ */
+function confirmAnswer(optionLetter) {
+  const q = questions[currentQuestionIndex];
+  const isCorrect = optionLetter === q.correct;
+
+  if (isCorrect) correctCount++;
+
+  // Sonido de buzzer según correcto/incorrecto
+  playBuzzer(isCorrect ? "correcto" : "incorrecto");
+
+  Swal.fire({
+    title: isCorrect ? "Respuesta correcta" : "Respuesta incorrecta",
+    text: isCorrect ? "¡Muy bien!" : `La respuesta correcta era ${q.correct}.`,
+    icon: isCorrect ? "success" : "error",
+    confirmButtonText: "Continuar"
+  }).then(() => {
+    goToNextQuestion();
+  });
+}
+
+/**
+ * Maneja el clic en opción A–E en la interfaz (botones de la UI).
+ * Para modo ESP32: al mostrarse el popup, se puede confirmar
+ * con el mismo botón físico A–E por segunda vez (doble pulsación).
+ */
 function handleOptionClick(optionLetter) {
   if (!quizInProgress) {
     Swal.fire("Atención", "Primero presiona Start para iniciar el evaluativo.", "info");
@@ -623,27 +666,37 @@ function handleOptionClick(optionLetter) {
   }
 
   const q = questions[currentQuestionIndex];
+  if (!q) {
+    Swal.fire("Error", "No se encontró la pregunta actual.", "error");
+    return;
+  }
+
+  pendingConfirmOption = optionLetter;
+
+  // Mensaje incluye instrucción para uso con ESP32
+  const extraMsg =
+    modoOperacion === "browser"
+      ? ""
+      : " (en modo ESP32, vuelve a presionar el mismo botón físico para confirmar).";
 
   Swal.fire({
     title: "Confirmar respuesta",
-    text: `¿Seguro que deseas marcar la opción ${optionLetter}?`,
+    text: `¿Seguro que deseas marcar la opción ${optionLetter}?${extraMsg}`,
     icon: "question",
     showCancelButton: true,
     confirmButtonText: "Confirmar",
     cancelButtonText: "Cancelar"
   }).then(result => {
-    if (result.isConfirmed) {
-      const isCorrect = optionLetter === q.correct;
-      if (isCorrect) correctCount++;
+    // Si pendingConfirmOption cambió por una pulsación física, no hacemos nada
+    if (pendingConfirmOption !== null && pendingConfirmOption !== optionLetter) {
+      return;
+    }
 
-      Swal.fire({
-        title: isCorrect ? "Respuesta correcta" : "Respuesta incorrecta",
-        text: isCorrect ? "Muy bien." : `La respuesta correcta era ${q.correct}.`,
-        icon: isCorrect ? "success" : "error",
-        confirmButtonText: "Continuar"
-      }).then(() => {
-        goToNextQuestion();
-      });
+    const wasPending = pendingConfirmOption === optionLetter;
+    pendingConfirmOption = null;
+
+    if (result.isConfirmed && wasPending) {
+      confirmAnswer(optionLetter);
     }
   });
 }
@@ -673,6 +726,11 @@ function finishQuiz(timeUp) {
   const grade = calculateGrade();
   const passed = grade >= passingGrade;
   const stars = gradeToStars(grade);
+
+  // Sonido de "felicitaciones" si aprobó
+  if (passed) {
+    playBuzzer("aprobado");
+  }
 
   if (currentStudent) {
     results.push({
@@ -1330,6 +1388,78 @@ function loadSavedTheme() {
   }
 }
 
+/************* HARDWARE: LECTURA DE /api/last_button *************/
+function handleHardwareButton(code) {
+  if (!code) return;
+
+  // START: solo inicia el evaluativo (si no está en curso)
+  if (code === "START") {
+    if (!quizInProgress) {
+      handleStartClick();
+    }
+    return;
+  }
+
+  // RESET: reinicia cronómetro si hay quiz en curso
+  if (code === "RESET") {
+    resetCurrentTimer();
+    return;
+  }
+
+  // CANCEL: si hay un popup de confirmación pendiente, lo cancela
+  if (code === "CANCEL") {
+    if (pendingConfirmOption !== null && Swal.isVisible()) {
+      pendingConfirmOption = null;
+      Swal.close();
+    }
+    return;
+  }
+
+  // A–E: opciones de respuesta
+  const letters = ["A", "B", "C", "D", "E"];
+  if (!letters.includes(code)) return;
+
+  // Si ya hay una opción pendiente de confirmar y coincide con el código
+  // => segunda pulsación (confirma la respuesta)
+  if (pendingConfirmOption === code && Swal.isVisible()) {
+    const optionLetter = pendingConfirmOption;
+    pendingConfirmOption = null;
+    Swal.close();              // Cerramos popup de confirmación
+    confirmAnswer(optionLetter);
+    return;
+  }
+
+  // Si NO hay pendiente (o es otra letra), tratamos como selección inicial
+  handleOptionClick(code);
+}
+
+function startHardwarePolling() {
+  if (modoOperacion === "browser") return; // Si solo navegador, no hay ESP32
+  if (hardwarePollInterval) return;        // Ya está corriendo
+
+  hardwarePollInterval = setInterval(async () => {
+    try {
+      const res = await fetch("/api/last_button", { cache: "no-store" });
+      if (!res.ok) return;
+      const data = await res.json();
+      if (!data || typeof data !== "object") return;
+
+      const eventId = typeof data.eventId === "number" ? data.eventId : 0;
+      const button = data.button;
+
+      if (!eventId || !button) return;
+      if (eventId <= lastButtonEventIdSeen) return;
+
+      lastButtonEventIdSeen = eventId;
+      handleHardwareButton(button);
+    } catch (err) {
+      // Si no hay ESP32 o falla la API, solo registramos y seguimos
+      // para no romper el flujo del navegador.
+      // console.warn("Polling /api/last_button falló:", err.message);
+    }
+  }, 250); // Polling cada 250 ms
+}
+
 /************* INICIALIZACIÓN *************/
 function initApp() {
   selectModeAtStartup();
@@ -1341,6 +1471,9 @@ function initApp() {
 
   // En modo ESP32 o BOTH, intentamos cargar estado persistido del micro
   tryLoadStateFromEsp32().then(() => {
+    // Arrancamos el polling de botones físicos si corresponde
+    startHardwarePolling();
+
     if (themeCheckbox) {
       themeCheckbox.addEventListener("change", () => {
         const newTheme = themeCheckbox.checked ? "dark" : "light";

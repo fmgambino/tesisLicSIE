@@ -12,10 +12,10 @@
   --shadow-btn: 0 3px 8px rgba(0,0,0,0.15);
 
   --btn-A: #e53935; /* rojo */
-  --btn-B: #1e88e5; /* azul */
-  --btn-C: #43a047; /* verde */
-  --btn-D: #fb8c00; /* naranja */
-  --btn-E: #8e24aa; /* violeta */
+  --btn-B: #43a047; /* verde */
+  --btn-C: #fbc02d; /* amarillo */
+  --btn-D: #c6c5c5; /* blanco */
+  --btn-E: #1e88e5; /* azul */
 }
 
 /* Tema oscuro */
@@ -31,11 +31,11 @@
   --shadow-soft: 0 4px 16px rgba(0,0,0,0.6);
   --shadow-btn: 0 3px 10px rgba(0,0,0,0.6);
 
-  --btn-A: #ef5350;
-  --btn-B: #42a5f5;
-  --btn-C: #66bb6a;
-  --btn-D: #ffa726;
-  --btn-E: #ab47bc;
+  --btn-A: #e53935; /* rojo */
+  --btn-B: #43a047; /* verde */
+  --btn-C: #fbc02d; /* amarillo */
+  --btn-D: #c6c5c5; /* blanco */
+  --btn-E: #1e88e5; /* azul */
 }
 
 * {

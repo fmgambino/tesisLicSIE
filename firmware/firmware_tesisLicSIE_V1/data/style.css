@@ -427,3 +427,387 @@ body[data-theme="dark"] .swal2-cancel {
   gap: 0.5rem;
   margin-left: 50px;
 }
+
+.nav-icon {
+  width: 18px;
+  height: 18px;
+  display: block;
+}
+
+.icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 38px;
+  min-height: 32px;
+}
+
+.toggle-slider .icon-sun,
+.toggle-slider .icon-moon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 0;
+}
+
+.toggle-icon {
+  width: 14px;
+  height: 14px;
+  display: block;
+}
+
+.swal2-html-container .form-layout {
+  text-align: left;
+}
+
+.swal2-html-container .form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.85rem 1rem;
+  margin-top: 0.25rem;
+}
+
+.swal2-html-container .form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.swal2-html-container .form-field-full {
+  grid-column: 1 / -1;
+}
+
+.swal2-html-container .form-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  line-height: 1.25;
+}
+
+.swal2-html-container .form-helper {
+  margin-top: 0.2rem;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
+.swal2-html-container .compact-input {
+  margin: 0 !important;
+  width: 100% !important;
+}
+
+.swal2-html-container .timer-mode-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.9rem;
+  padding: 0.5rem 0 0.15rem;
+}
+
+.swal2-html-container .timer-mode-option {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.84rem;
+  color: var(--text);
+}
+
+.swal2-html-container .popup-inline-btn {
+  margin-top: 0.3rem;
+  align-self: flex-start;
+  padding: 0.45rem 0.85rem;
+  border-radius: 999px;
+  border: 1px solid var(--border-soft);
+  background: transparent;
+  color: var(--text);
+  cursor: pointer;
+  font-size: 0.8rem;
+}
+
+.swal2-html-container .popup-inline-btn:hover {
+  background: rgba(0,0,0,0.04);
+}
+
+.swal2-html-container .password-wrapper {
+  gap: 0.45rem;
+}
+
+.swal2-html-container .eye-btn {
+  width: 42px;
+  height: 42px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 42px;
+}
+
+.swal2-html-container .eye-btn svg {
+  width: 18px;
+  height: 18px;
+  display: block;
+}
+
+body[data-theme="dark"] .swal2-html-container .form-label,
+body[data-theme="dark"] .swal2-html-container .form-helper,
+body[data-theme="dark"] .swal2-html-container .timer-mode-option {
+  color: #dddddd;
+}
+
+@media (max-width: 720px) {
+  .swal2-html-container .form-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+.swal2-popup.swal2-modal {
+  max-width: min(92vw, 760px);
+}
+
+.swal2-html-container .form-layout {
+  text-align: left;
+}
+
+.swal2-html-container .form-layout-login {
+  max-width: 340px;
+  margin: 0 auto;
+}
+
+.swal2-html-container .form-layout-config {
+  width: 100%;
+}
+
+.swal2-html-container .form-grid {
+  display: grid;
+  gap: 0.95rem 1rem;
+}
+
+.swal2-html-container .form-grid-single {
+  grid-template-columns: 1fr;
+}
+
+.swal2-html-container .form-grid-config,
+.swal2-html-container .form-grid-admin {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.swal2-html-container .form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.42rem;
+  min-width: 0;
+}
+
+.swal2-html-container .form-field-full {
+  grid-column: 1 / -1;
+}
+
+.swal2-html-container .form-label {
+  display: block;
+  margin: 0;
+  font-size: 0.84rem;
+  font-weight: 600;
+  line-height: 1.35;
+  color: var(--text);
+}
+
+.swal2-html-container .form-label-sub {
+  font-size: 0.8rem;
+}
+
+.swal2-html-container .form-helper {
+  margin-top: 0.1rem;
+  font-size: 0.78rem;
+  line-height: 1.45;
+  color: var(--text-muted);
+}
+
+.swal2-html-container .form-example-block {
+  padding: 0.8rem 0.95rem;
+  border: 1px dashed var(--border-soft);
+  border-radius: 0.8rem;
+  background: rgba(0, 0, 0, 0.02);
+}
+
+.swal2-html-container .compact-input,
+.swal2-html-container .compact-file {
+  width: 100% !important;
+  margin: 0 !important;
+}
+
+.swal2-html-container .compact-file {
+  padding: 0.55rem 0.7rem !important;
+}
+
+.swal2-html-container .admin-access-block {
+  margin-top: 0.25rem;
+  padding-top: 0.2rem;
+  border-top: 1px solid rgba(127,127,127,0.18);
+}
+
+.swal2-html-container .timer-mode-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.8rem 1rem;
+  align-items: center;
+}
+
+.swal2-html-container .timer-mode-option {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.84rem;
+  color: var(--text);
+}
+
+.swal2-html-container .timer-mode-option input {
+  margin: 0;
+}
+
+.swal2-html-container .popup-inline-btn {
+  margin-top: 0.15rem;
+  align-self: flex-start;
+  padding: 0.5rem 0.9rem;
+  border-radius: 999px;
+  border: 1px solid var(--border-soft);
+  background: transparent;
+  color: var(--text);
+  cursor: pointer;
+  font-size: 0.8rem;
+}
+
+.swal2-html-container .popup-inline-btn:hover {
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.swal2-html-container .password-wrapper.compact-password-wrapper {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 46px;
+  align-items: center;
+  gap: 0.55rem;
+}
+
+.swal2-html-container .compact-password-input {
+  min-width: 0;
+}
+
+.swal2-html-container .eye-btn {
+  width: 46px;
+  height: 46px;
+  margin: 0;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border-soft);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--text);
+  cursor: pointer;
+}
+
+.swal2-html-container .eye-btn:hover {
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.swal2-html-container .eye-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 0;
+}
+
+.swal2-html-container .eye-btn svg {
+  width: 18px;
+  height: 18px;
+  display: block;
+}
+
+body[data-theme="dark"] .swal2-html-container .form-label,
+body[data-theme="dark"] .swal2-html-container .timer-mode-option {
+  color: #f1f1f1;
+}
+
+body[data-theme="dark"] .swal2-html-container .form-helper {
+  color: #cfcfcf;
+}
+
+body[data-theme="dark"] .swal2-html-container .form-example-block {
+  background: rgba(255, 255, 255, 0.03);
+  border-color: rgba(255,255,255,0.12);
+}
+
+body[data-theme="dark"] .swal2-html-container .popup-inline-btn:hover,
+body[data-theme="dark"] .swal2-html-container .eye-btn:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+@media (max-width: 720px) {
+  .swal2-html-container .form-grid-config,
+  .swal2-html-container .form-grid-admin {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+/* Ajustes finales formularios login/config y footer */
+.swal2-html-container .form-layout-login .form-label,
+.swal2-html-container .form-layout-config .form-label {
+  color: var(--text);
+}
+
+.swal2-html-container .form-layout-login .form-grid,
+.swal2-html-container .form-layout-config .form-grid {
+  margin-top: 0;
+}
+
+.swal2-html-container .popup-inline-btn,
+.swal2-html-container .eye-btn {
+  transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.15s ease;
+}
+
+.swal2-html-container .popup-inline-btn:active,
+.swal2-html-container .eye-btn:active {
+  transform: scale(0.97);
+}
+
+.swal2-html-container .popup-inline-btn svg,
+.swal2-html-container .eye-btn svg {
+  width: 18px;
+  height: 18px;
+  display: block;
+}
+
+.footer-signature {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.32rem;
+}
+
+.footer-heart-icon {
+  width: 16px;
+  height: 16px;
+  color: #e53935;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+
+.logo {
+  height: 40px;
+  display: none;
+}
+
+/* Mostrar logo claro por defecto */
+.logo-light {
+  display: block;
+}
+
+/* Modo oscuro */
+[data-theme="dark"] .logo-light {
+  display: none;
+}
+
+[data-theme="dark"] .logo-dark {
+  display: block;
+}

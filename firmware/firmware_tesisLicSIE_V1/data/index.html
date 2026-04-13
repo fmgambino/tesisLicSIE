@@ -24,9 +24,19 @@
   <!-- NAVBAR -->
   <nav class="navbar">
     <div class="nav-left">
-      <!-- Logo UTN-TUC (servido por el ESP32 o hosting) -->
-      <img src="https://frt.utn.edu.ar/wp-content/uploads/elementor/thumbs/descarga-removebg-preview-qxah6c0ycvhe6sie8wx30a0gb3rf1yn226favl26tc-qy17u6no60q8xbkeh0dtetqyiz7hei7hiu2sc1k9vk.png" alt="UTN-TUC">
-        
+      <!-- Logo modo claro -->
+      <img
+        src="https://ingreso.frt.utn.edu.ar/wp-content/uploads/2024/08/cropped-WhatsApp-Image-2024-08-02-at-5.52.57-PM-3.jpeg"
+        alt="UTN TUC modo claro"
+        class="logo logo-light"
+      >
+
+      <!-- Logo modo oscuro -->
+      <img
+        src="https://ingreso.frt.utn.edu.ar/wp-content/uploads/2024/08/utn_tuc-removebg-preview.png"
+        alt="UTN TUC modo oscuro"
+        class="logo logo-dark"
+      >
     </div>
 
 <div class="titulo">
@@ -45,9 +55,11 @@
       <!-- Botón Resultados -->
       <button id="btnShowResults" class="nav-btn">Resultados</button>
 
-      <!-- Botón Editar Config (lápiz) -->
-      <button id="btnEditConfig" class="icon-btn" title="Editar configuración del test">
-        ✏️
+      <!-- Botón Editar Config (SVG) -->
+      <button id="btnEditConfig" class="icon-btn" title="Editar configuración del test" aria-label="Editar configuración del test">
+        <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zm14.71-9.04a1.003 1.003 0 0 0 0-1.42l-2.5-2.5a1.003 1.003 0 0 0-1.42 0l-1.96 1.96 3.75 3.75 2.13-1.79z" fill="currentColor"/>
+        </svg>
       </button>
 
       <!-- Toggle Tema -->
@@ -56,8 +68,17 @@
         <label class="toggle-switch">
           <input type="checkbox" id="themeCheckbox">
           <div class="toggle-slider">
-            <span class="icon-sun">☀️</span>
-            <span class="icon-moon">🌙</span>
+            <span class="icon-sun" aria-hidden="true">
+              <svg class="toggle-icon" viewBox="0 0 24 24" focusable="false">
+                <circle cx="12" cy="12" r="4" fill="currentColor"></circle>
+                <path d="M12 1.75v2.5M12 19.75v2.5M4.22 4.22l1.77 1.77M18.01 18.01l1.77 1.77M1.75 12h2.5M19.75 12h2.5M4.22 19.78l1.77-1.77M18.01 5.99l1.77-1.77" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" fill="none"></path>
+              </svg>
+            </span>
+            <span class="icon-moon" aria-hidden="true">
+              <svg class="toggle-icon" viewBox="0 0 24 24" focusable="false">
+                <path d="M20.2 14.14A8.5 8.5 0 0 1 9.86 3.8a8.75 8.75 0 1 0 10.34 10.34z" fill="currentColor"></path>
+              </svg>
+            </span>
           </div>
         </label>
       </div>
@@ -115,7 +136,13 @@
 
   <!-- FOOTER -->
   <footer onclick="window.open('https://fmgambino.blog', '_blank')">
-    <span>Hecho con ❤️ por Profe Leandro</span>
+    <span class="footer-signature">
+      Hecho con
+      <svg class="footer-heart-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="currentColor"></path>
+      </svg>
+      por Profe Leandro
+    </span>
   </footer>
 
   <!-- JS principal -->

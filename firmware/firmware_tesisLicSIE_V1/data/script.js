@@ -94,6 +94,54 @@ function loadScript(src) {
   });
 }
 
+
+function getIconSvg(name) {
+  const icons = {
+    eye: `
+      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <path d="M2.04 12a11.98 11.98 0 0 1 19.92 0A11.98 11.98 0 0 1 12 19.5 11.98 11.98 0 0 1 2.04 12Z" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"></path>
+        <circle cx="12" cy="12" r="3.2" fill="none" stroke="currentColor" stroke-width="1.9"></circle>
+      </svg>
+    `,
+    eyeOff: `
+      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <path d="M3 3l18 18" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"></path>
+        <path d="M10.58 10.58A3 3 0 0 0 13.42 13.42" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"></path>
+        <path d="M9.88 5.09A10.94 10.94 0 0 1 12 4.88c5.05 0 8.93 3.35 10 7.12a11.8 11.8 0 0 1-4.17 5.94" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"></path>
+        <path d="M6.61 6.61A11.83 11.83 0 0 0 2 12c1.07 3.77 4.95 7.12 10 7.12 1.76 0 3.39-.4 4.84-1.09" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"></path>
+      </svg>
+    `,
+    upload: `
+      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <path d="M12 16V4" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"></path>
+        <path d="M7.5 8.5 12 4l4.5 4.5" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"></path>
+        <path d="M4 16.5V18a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-1.5" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"></path>
+      </svg>
+    `
+  };
+  return icons[name] || "";
+}
+
+function setupPasswordToggle(inputId, buttonId) {
+  const passInput = document.getElementById(inputId);
+  const toggleBtn = document.getElementById(buttonId);
+  if (!passInput || !toggleBtn) return;
+
+  const syncState = () => {
+    const isPassword = passInput.type === "password";
+    toggleBtn.innerHTML = `<span class="eye-icon">${getIconSvg(isPassword ? "eye" : "eyeOff")}</span>`;
+    toggleBtn.setAttribute("aria-label", isPassword ? "Mostrar contraseña" : "Ocultar contraseña");
+    toggleBtn.setAttribute("title", isPassword ? "Mostrar contraseña" : "Ocultar contraseña");
+  };
+
+  toggleBtn.addEventListener("click", () => {
+    passInput.type = passInput.type === "password" ? "text" : "password";
+    syncState();
+  });
+
+  syncState();
+}
+
 /************* MODO DE TRABAJO (ESP32 / BROWSER / BOTH) *************/
 function selectModeAtStartup() {
   const saved = localStorage.getItem(MODE_KEY);
@@ -801,6 +849,7 @@ function resetCurrentTimer() {
 window.resetCurrentTimer = resetCurrentTimer;
 
 /************* CONFIGURACIÓN DEL DOCENTE *************/
+
 function openTeacherConfig(editMode) {
   const existingNum =
     teacherConfig.numQuestions || (allQuestions ? allQuestions.length : 0);
@@ -810,63 +859,89 @@ function openTeacherConfig(editMode) {
 
   return Swal.fire({
     title: editMode ? "Editar configuración del evaluativo" : "Configurar evaluativo",
+    width: 760,
     html: `
-      <div style="text-align:left;font-size:0.9rem">
-        <label>Nombre del docente:</label>
-        <input id="docNombre" class="swal2-input" placeholder="Nombre" value="${teacherConfig.nombreDocente || ""}">
+      <div class="form-layout form-layout-config">
+        <div class="form-grid form-grid-config">
+          <div class="form-field">
+            <label class="form-label" for="docNombre">Nombre del docente</label>
+            <input id="docNombre" class="swal2-input compact-input" placeholder="Nombre" value="${teacherConfig.nombreDocente || ""}">
+          </div>
 
-        <label>Apellido del docente:</label>
-        <input id="docApellido" class="swal2-input" placeholder="Apellido" value="${teacherConfig.apellidoDocente || ""}">
+          <div class="form-field">
+            <label class="form-label" for="docApellido">Apellido del docente</label>
+            <input id="docApellido" class="swal2-input compact-input" placeholder="Apellido" value="${teacherConfig.apellidoDocente || ""}">
+          </div>
 
-        <label>Curso:</label>
-        <input id="docCurso" class="swal2-input" placeholder="Ej: 3°" value="${teacherConfig.curso || ""}">
+          <div class="form-field">
+            <label class="form-label" for="docCurso">Curso</label>
+            <input id="docCurso" class="swal2-input compact-input" placeholder="Ej: 3°" value="${teacherConfig.curso || ""}">
+          </div>
 
-        <label>División:</label>
-        <input id="docDivision" class="swal2-input" placeholder="Ej: A" value="${teacherConfig.division || ""}">
+          <div class="form-field">
+            <label class="form-label" for="docDivision">División</label>
+            <input id="docDivision" class="swal2-input compact-input" placeholder="Ej: A" value="${teacherConfig.division || ""}">
+          </div>
 
-        <label>Cantidad de preguntas a mostrar:</label>
-        <input id="numPreguntas" type="number" class="swal2-input" min="1" placeholder="Ej: 15" value="${numPlaceholder}">
+          <div class="form-field">
+            <label class="form-label" for="numPreguntas">Cantidad de preguntas a mostrar</label>
+            <input id="numPreguntas" type="number" class="swal2-input compact-input" min="1" placeholder="Ej: 15" value="${numPlaceholder}">
+          </div>
 
-        <label>Modo de cronómetro:</label>
-        <div class="timer-mode-row" style="margin-bottom:0.5rem;">
-          <label style="margin-right:0.5rem;">
-            <input type="radio" name="timerMode" value="up" ${mode === "up" ? "checked" : ""}>
-            Incremental (0 → ...)
-          </label>
-          <label>
-            <input type="radio" name="timerMode" value="down" ${mode === "down" ? "checked" : ""}>
-            Decremental (X min → 0)
-          </label>
-        </div>
+          <div class="form-field">
+            <label class="form-label">Modo de cronómetro</label>
+            <div class="timer-mode-row">
+              <label class="timer-mode-option">
+                <input type="radio" name="timerMode" value="up" ${mode === "up" ? "checked" : ""}>
+                <span>Incremental (0 → ...)</span>
+              </label>
+              <label class="timer-mode-option">
+                <input type="radio" name="timerMode" value="down" ${mode === "down" ? "checked" : ""}>
+                <span>Decremental (X min → 0)</span>
+              </label>
+            </div>
+          </div>
 
-        <label>Minutos para cronómetro decreciente:</label>
-        <input id="timerMinutes" type="number" class="swal2-input" min="1" placeholder="Ej: 40" value="${minutesVal}">
+          <div class="form-field">
+            <label class="form-label" for="timerMinutes">Minutos para cronómetro decreciente</label>
+            <input id="timerMinutes" type="number" class="swal2-input compact-input" min="1" placeholder="Ej: 40" value="${minutesVal}">
+          </div>
 
-        <label>Archivo TXT de preguntas:</label>
-        <input id="questionsFile" type="file" class="swal2-file" accept=".txt">
+          <div class="form-field form-field-full">
+            <label class="form-label" for="questionsFile">Archivo TXT de preguntas</label>
+            <input id="questionsFile" type="file" class="swal2-file compact-file" accept=".txt">
+            <div class="form-helper">Puedes cargar un nuevo archivo o conservar el ya guardado.</div>
+          </div>
 
-        <div style="margin-top:0.4rem;font-size:0.8rem;">
-          <strong>Formato por pregunta:</strong><br>
-          ¿Pregunta?<br>
-          A) ...<br>B) ...<br>C) ...<br>D) ...<br>E) ...<br>ANSWER: C
-        </div>
+          <div class="form-field form-field-full">
+            <div class="form-example-block">
+              <strong>Formato por pregunta:</strong><br>
+              ¿Pregunta?<br>
+              A) ...<br>B) ...<br>C) ...<br>D) ...<br>E) ...<br>ANSWER: C
+            </div>
+            <button type="button" id="downloadExampleTxt" class="popup-inline-btn">
+              <span class="eye-icon">${getIconSvg("upload")}</span>
+              <span>Descargar ejemplo TXT (10 preguntas)</span>
+            </button>
+          </div>
 
-        <button type="button" id="downloadExampleTxt" style="
-          margin-top:0.6rem;
-          padding:6px 10px;
-          font-size:0.8rem;
-          border-radius:999px;
-          border:1px solid #ccc;
-          background:#f5f5f5;
-          cursor:pointer;
-        ">
-          Descargar ejemplo TXT (10 preguntas)
-        </button>
+          <div class="form-field form-field-full admin-access-block">
+            <label class="form-label" for="adminUser">Usuario administrador para próximos accesos</label>
+            <div class="form-grid form-grid-admin">
+              <div class="form-field">
+                <label class="form-label form-label-sub" for="adminUser">Usuario</label>
+                <input id="adminUser" class="swal2-input compact-input" placeholder="Usuario admin" value="${adminCreds.user}">
+              </div>
 
-        <div style="margin-top:0.8rem;font-size:0.8rem;">
-          <strong>Usuario y contraseña de administrador (para próximos accesos):</strong>
-          <input id="adminUser" class="swal2-input" placeholder="Usuario admin" value="${adminCreds.user}">
-          <input id="adminPass" class="swal2-input" placeholder="Contraseña admin" type="password" value="${adminCreds.pass}">
+              <div class="form-field">
+                <label class="form-label form-label-sub" for="adminPass">Contraseña</label>
+                <div class="password-wrapper compact-password-wrapper">
+                  <input id="adminPass" class="swal2-input compact-input compact-password-input" placeholder="Contraseña admin" type="password" value="${adminCreds.pass}">
+                  <button type="button" id="toggleAdminPass" class="eye-btn" aria-label="Mostrar contraseña"></button>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     `,
@@ -879,6 +954,7 @@ function openTeacherConfig(editMode) {
       if (btn) {
         btn.addEventListener("click", downloadExampleTxt);
       }
+      setupPasswordToggle("adminPass", "toggleAdminPass");
     },
     preConfirm: () => {
       const nombre = document.getElementById("docNombre").value.trim();
@@ -1012,14 +1088,27 @@ function openTeacherConfig(editMode) {
 }
 
 /************* LOGIN ADMIN PARA EDITAR CONFIG *************/
+
+
 function promptAdminLoginAndEdit() {
   Swal.fire({
     title: "Acceso configuración",
     html: `
-      <input id="loginUser" class="swal2-input" placeholder="Usuario">
-      <div class="password-wrapper">
-        <input id="loginPass" class="swal2-input" placeholder="Contraseña" type="password">
-        <button type="button" id="toggleLoginPass" class="eye-btn">👁️</button>
+      <div class="form-layout form-layout-login">
+        <div class="form-grid form-grid-single">
+          <div class="form-field">
+            <label class="form-label" for="loginUser">Usuario administrador</label>
+            <input id="loginUser" class="swal2-input compact-input" placeholder="Usuario" autocomplete="username">
+          </div>
+
+          <div class="form-field">
+            <label class="form-label" for="loginPass">Contraseña</label>
+            <div class="password-wrapper compact-password-wrapper">
+              <input id="loginPass" class="swal2-input compact-input compact-password-input" placeholder="Contraseña" type="password" autocomplete="current-password">
+              <button type="button" id="toggleLoginPass" class="eye-btn" aria-label="Mostrar contraseña"></button>
+            </div>
+          </div>
+        </div>
       </div>
     `,
     focusConfirm: false,
@@ -1027,19 +1116,7 @@ function promptAdminLoginAndEdit() {
     confirmButtonText: "Ingresar",
     cancelButtonText: "Cancelar",
     didOpen: () => {
-      const passInput = document.getElementById("loginPass");
-      const toggleBtn = document.getElementById("toggleLoginPass");
-      if (passInput && toggleBtn) {
-        toggleBtn.addEventListener("click", () => {
-          if (passInput.type === "password") {
-            passInput.type = "text";
-            toggleBtn.textContent = "🙈";
-          } else {
-            passInput.type = "password";
-            toggleBtn.textContent = "👁️";
-          }
-        });
-      }
+      setupPasswordToggle("loginPass", "toggleLoginPass");
     },
     preConfirm: () => {
       const user = document.getElementById("loginUser").value.trim();
@@ -1067,6 +1144,7 @@ function promptAdminLoginAndEdit() {
 }
 
 /************* DATOS DEL ALUMNO *************/
+
 function askStudentData() {
   return Swal.fire({
     title: "Datos del alumno",

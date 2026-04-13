@@ -29,7 +29,7 @@ static const uint8_t PIN_BTN_E_BLUE    = 32; // Azul -> E
 
 static const uint8_t PIN_BTN_START     = 14; // btn_start físico -> "START"
 static const uint8_t PIN_BTN_CANCEL    = 16; // rojo cancelar   -> "CANCEL"
-static const uint8_t PIN_BTN_ACCEPT    = 17; // verde aceptar dedicado -> "ACCEPT" (confirma la selección pendiente)
+static const uint8_t PIN_BTN_ACCEPT    = 17; // verde aceptar   -> "ACCEPT" (confirma)
 
 static const uint8_t PIN_BUZZER        = 4;  // buzzer (pasivo recomendado)
 static const uint8_t BUZZER_CH         = 0;  // canal LEDC
@@ -44,18 +44,10 @@ WebServer server(80);
 static String g_stateJson = "{}";
 
 // /api/last_button
-// -----------------------------------------------------------------------------
-// g_eventId   -> contador incremental para que la web no reprocesse eventos viejos
-// g_lastButton-> último código lógico enviado a la interfaz web
-//
-// g_lastSelectedLetter / g_lastSelectedMs se usan para validar que ACCEPT solo
-// confirme una selección REAL y reciente.
-// -----------------------------------------------------------------------------
 static volatile uint32_t g_eventId = 0;
 static String g_lastButton = "";
 
-// Última opción A-E elegida y momento en que fue pulsada.
-// Se usa para validar la ventana de confirmación del botón ACCEPT.
+// Para aceptar sin tocar tu JS: re-emitir última letra A-E
 static String g_lastSelectedLetter = "";
 static uint32_t g_lastSelectedMs = 0;
 
@@ -226,20 +218,12 @@ static void buttonsInit() {
 }
 
 static void onButtonPressed(const String& code) {
-  // ---------------------------------------------------------------------------
-  // START y CANCEL se publican exactamente como llegan.
-  // ---------------------------------------------------------------------------
   if (code == "START" || code == "CANCEL") {
     pushEvent(code);
     return;
   }
 
-  // ---------------------------------------------------------------------------
-  // Letras A-E:
-  // 1) guardamos cuál fue la última selección válida
-  // 2) guardamos el tiempo de esa selección
-  // 3) enviamos la letra a la web para que la marque como pendiente
-  // ---------------------------------------------------------------------------
+  // Letras A–E
   if (code.length() == 1 && code[0] >= 'A' && code[0] <= 'E') {
     g_lastSelectedLetter = code;
     g_lastSelectedMs = millis();
@@ -247,23 +231,11 @@ static void onButtonPressed(const String& code) {
     return;
   }
 
-  // ---------------------------------------------------------------------------
-  // ACCEPT:
-  // En esta versión mejorada YA NO re-enviamos la misma letra.
-  //
-  // Ahora publicamos el código "ACCEPT" de forma explícita, pero solo si:
-  //   - existe una letra previa válida, y
-  //   - la confirmación ocurre dentro de la ventana ACCEPT_WINDOW_MS.
-  //
-  // Ventajas:
-  //   - la web puede distinguir claramente "seleccionar" de "confirmar"
-  //   - se evita la ambigüedad de confirmar pulsando otra vez la misma letra
-  //   - el mantenimiento del JS y del firmware es mucho más simple
-  // ---------------------------------------------------------------------------
+  // ACCEPT: confirma re-emitiendo última letra dentro de ventana
   if (code == "ACCEPT") {
     if (g_lastSelectedLetter.length() == 1 &&
         (millis() - g_lastSelectedMs) <= ACCEPT_WINDOW_MS) {
-      pushEvent("ACCEPT");
+      pushEvent(g_lastSelectedLetter);
     }
     return;
   }
@@ -319,15 +291,6 @@ static void apiStatePost() {
 }
 
 static void apiLastButton() {
-  // Esta API expone el último evento físico detectado.
-  //
-  // Formato:
-  //   {
-  //     "eventId": 123,
-  //     "button": "A|B|C|D|E|START|CANCEL|ACCEPT"
-  //   }
-  //
-  // La web usa eventId para no procesar dos veces el mismo botón.
   StaticJsonDocument<128> doc;
   doc["eventId"] = g_eventId;
   doc["button"]  = g_lastButton;

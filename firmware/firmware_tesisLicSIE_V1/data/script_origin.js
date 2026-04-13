@@ -54,24 +54,8 @@ let results = []; // ranking de alumnos
 // Para que el "próximo alumno" no reciba el mismo conjunto que el anterior
 let lastQuestionSetSignature = null;
 
-// -----------------------------------------------------------------------------
-// INTEGRACIÓN CON EL FIRMWARE NUEVO DEL ESP32
-// -----------------------------------------------------------------------------
-// main.cpp ahora publica por /api/last_button estos códigos:
-//   - START   -> iniciar flujo
-//   - CANCEL  -> cancelar selección pendiente
-//   - ACCEPT  -> confirmar selección pendiente
-//   - A/B/C/D/E -> seleccionar opción de respuesta
-//
-// IMPORTANTE:
-//   - Ya NO existe la lógica vieja de "confirmar con doble pulsación de la misma
-//     letra".
-//   - La web conserva el mismo HTML y el mismo CSS; solo cambia la forma en que
-//     interpreta los eventos físicos.
-//   - pendingConfirmOption guarda la opción elegida hasta que llegue ACCEPT o
-//     hasta que el usuario cancele/cambie la selección.
-// -----------------------------------------------------------------------------
-let pendingConfirmOption = null;   // Letra pendiente de confirmar (A–E)
+// Para la confirmación con doble pulsación de botón físico
+let pendingConfirmOption = null;   // Letra pendiente de confirmar (A–E) si hay popup abierto
 let lastButtonEventIdSeen = 0;     // Último eventId de /api/last_button procesado
 let hardwarePollInterval = null;   // Intervalo de polling de botones físicos
 
@@ -719,14 +703,9 @@ function confirmAnswer(optionLetter) {
 }
 
 /**
- * Maneja la selección de una opción A–E desde la UI o desde hardware.
- *
- * Reglas de esta versión:
- *   1) Pulsar A/B/C/D/E solo selecciona o cambia la opción pendiente.
- *   2) La confirmación real ocurre únicamente cuando el usuario:
- *      - pulsa "Confirmar" en el popup, o
- *      - recibe el código ACCEPT desde el firmware nuevo.
- *   3) No se cambia ninguna clase CSS ni ningún id del HTML.
+ * Maneja el clic en opción A–E en la interfaz (botones de la UI).
+ * Para modo ESP32: al mostrarse el popup, se puede confirmar
+ * con el mismo botón físico A–E por segunda vez (doble pulsación).
  */
 function handleOptionClick(optionLetter) {
   if (!quizInProgress) {
@@ -742,11 +721,11 @@ function handleOptionClick(optionLetter) {
 
   pendingConfirmOption = optionLetter;
 
-  // Mensaje adaptado al firmware NUEVO.
+  // Mensaje incluye instrucción para uso con ESP32
   const extraMsg =
     modoOperacion === "browser"
       ? ""
-      : " (en modo ESP32, usa ACCEPT para confirmar o CANCEL para anular).";
+      : " (en modo ESP32, vuelve a presionar el mismo botón físico para confirmar).";
 
   Swal.fire({
     title: "Confirmar respuesta",
@@ -756,8 +735,7 @@ function handleOptionClick(optionLetter) {
     confirmButtonText: "Confirmar",
     cancelButtonText: "Cancelar"
   }).then(result => {
-    // Si mientras el popup estaba abierto la selección cambió,
-    // este popup viejo ya no debe confirmar nada.
+    // Si pendingConfirmOption cambió por una pulsación física, no hacemos nada
     if (pendingConfirmOption !== null && pendingConfirmOption !== optionLetter) {
       return;
     }
@@ -1489,24 +1467,10 @@ function loadSavedTheme() {
 }
 
 /************* HARDWARE: LECTURA DE /api/last_button *************/
-/**
- * Procesa un código recibido desde el firmware nuevo del ESP32.
- *
- * Contrato esperado desde main.cpp:
- *   - START  -> iniciar
- *   - CANCEL -> cancelar selección pendiente
- *   - ACCEPT -> confirmar selección pendiente
- *   - A/B/C/D/E -> seleccionar o cambiar opción
- *
- * MUY IMPORTANTE:
- *   - No se usa RESET.
- *   - No se confirma con una segunda pulsación de la misma letra.
- *   - No se cambian clases, estilos ni ids del HTML.
- */
 function handleHardwareButton(code) {
   if (!code) return;
 
-  // START: inicia el flujo solo si el quiz aún no está corriendo.
+  // START: solo inicia el evaluativo (si no está en curso)
   if (code === "START") {
     if (!quizInProgress) {
       handleStartClick();
@@ -1514,30 +1478,36 @@ function handleHardwareButton(code) {
     return;
   }
 
-  // CANCEL: cierra el popup y limpia la opción pendiente.
-  if (code === "CANCEL") {
-    if (pendingConfirmOption !== null) {
-      pendingConfirmOption = null;
-      if (Swal.isVisible()) Swal.close();
-    }
+  // RESET: reinicia cronómetro si hay quiz en curso
+  if (code === "RESET") {
+    resetCurrentTimer();
     return;
   }
 
-  // ACCEPT: única confirmación física válida en el firmware nuevo.
-  if (code === "ACCEPT") {
+  // CANCEL: si hay un popup de confirmación pendiente, lo cancela
+  if (code === "CANCEL") {
     if (pendingConfirmOption !== null && Swal.isVisible()) {
-      const optionLetter = pendingConfirmOption;
       pendingConfirmOption = null;
       Swal.close();
-      confirmAnswer(optionLetter);
     }
     return;
   }
 
-  // Letras A–E: solo seleccionan o cambian la opción pendiente.
+  // A–E: opciones de respuesta
   const letters = ["A", "B", "C", "D", "E"];
   if (!letters.includes(code)) return;
 
+  // Si ya hay una opción pendiente de confirmar y coincide con el código
+  // => segunda pulsación (confirma la respuesta)
+  if (pendingConfirmOption === code && Swal.isVisible()) {
+    const optionLetter = pendingConfirmOption;
+    pendingConfirmOption = null;
+    Swal.close();              // Cerramos popup de confirmación
+    confirmAnswer(optionLetter);
+    return;
+  }
+
+  // Si NO hay pendiente (o es otra letra), tratamos como selección inicial
   handleOptionClick(code);
 }
 
